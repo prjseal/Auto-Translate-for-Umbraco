@@ -3,11 +3,11 @@
 ################################################################################
 
 /.vs
-/AutoTranslate/bin/Debug
-/AutoTranslate/obj/Debug
+/AutoTranslate/bin
+/AutoTranslate/obj
 /AutoTranslate.Web/App_Data/Logs
 /AutoTranslate.Web/App_Data/TEMP
 /AutoTranslate.Web/bin
-/AutoTranslate.Web/obj/Debug
+/AutoTranslate.Web/obj
 /AutoTranslate.Web/Umbraco
 /packages
