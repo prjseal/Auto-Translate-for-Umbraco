@@ -1,0 +1,8 @@
+{
+    "css": [
+        "~/App_Plugins/AutoTranslate/css/autotranslate.style.css"
+    ],
+    "javascript": [
+        "~/App_Plugins/AutoTranslate/js/autotranslate.controller.js"
+    ]
+}
