@@ -7,8 +7,6 @@
         function init() {
             var culture = $routeParams.cculture ? $routeParams.cculture : $routeParams.mculture;
             apiUrl = Umbraco.Sys.ServerVariables["AutoTranslate"]["TextTranslateApiUrl"];
-            //console.log(Umbraco.Sys.ServerVariables);
-            //$scope.getTranslatedText();
         }
 
         $scope.getTranslatedText = function () {
@@ -17,14 +15,19 @@
             $http({
                 method: 'POST',
                 url: apiUrl + 'GetTranslatedText/',
-                data: JSON.stringify({ CurrentCulture: culture, NodeId: editorState.current.id }),
+                data: JSON.stringify({
+                    CurrentCulture: culture,
+                    NodeId: editorState.current.id,
+                    OverwriteExistingValues: true,
+                    IncludeDescendants: false
+                }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             }).then(function (response) {
                 $window.location.reload(true);
             });
-        }
+        };
 
         init();
     }

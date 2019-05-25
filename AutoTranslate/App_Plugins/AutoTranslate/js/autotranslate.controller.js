@@ -15,7 +15,12 @@
             $http({
                 method: 'POST',
                 url: apiUrl + 'GetTranslatedText/',
-                data: JSON.stringify({ CurrentCulture: culture, NodeId: editorState.current.id }),
+                data: JSON.stringify({
+                    CurrentCulture: culture,
+                    NodeId: editorState.current.id,
+                    OverwriteExistingValues: true,
+                    IncludeDescendants: false
+                }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
