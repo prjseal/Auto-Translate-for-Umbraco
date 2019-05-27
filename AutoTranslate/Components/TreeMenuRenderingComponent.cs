@@ -43,10 +43,19 @@ namespace AutoTranslate.Components
                     var menuItem = new Umbraco.Web.Models.Trees.MenuItem("autoTranslate", "Auto Translate..");
                     menuItem.Icon = "globe-inverted-europe-africa";
                     menuItem.SeparatorBefore = true;
-                    menuItem.AdditionalData.Add("actionView", "/App_Plugins/AutoTranslate/autotranslate.index.html");
+                    menuItem.AdditionalData.Add("actionView", "/App_Plugins/AutoTranslate/autotranslate.content.html");
                     var menuPosition = e.Menu.Items.Count - 1;
                     e.Menu.Items.Insert(menuPosition, menuItem);
                 }
+            }
+            else if (sender.TreeAlias == "dictionary")
+            {
+                var menuItem = new Umbraco.Web.Models.Trees.MenuItem("autoTranslate", "Auto Translate..");
+                menuItem.Icon = "globe-inverted-europe-africa";
+                menuItem.SeparatorBefore = true;
+                menuItem.AdditionalData.Add("actionView", "/App_Plugins/AutoTranslate/autotranslate.dictionary.html");
+                var menuPosition = e.Menu.Items.Count - 1;
+                e.Menu.Items.Insert(menuPosition, menuItem);
             }
         }
     }

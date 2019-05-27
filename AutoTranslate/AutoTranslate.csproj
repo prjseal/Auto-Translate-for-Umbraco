@@ -238,12 +238,14 @@
     <Compile Include="Controllers\UtcaBackofficeApiController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ITextService.cs" />
-    <Compile Include="Services\TextService.cs" />
+    <Compile Include="Services\AzureTextService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Plugins\AutoTranslate\autotranslate.index.html" />
+    <Content Include="App_Plugins\AutoTranslate\autotranslate.dictionary.html" />
+    <Content Include="App_Plugins\AutoTranslate\autotranslate.content.html" />
     <Content Include="App_Plugins\AutoTranslate\css\autotranslate.style.css" />
-    <Content Include="App_Plugins\AutoTranslate\js\autotranslate.controller.js" />
+    <Content Include="App_Plugins\AutoTranslate\js\autotranslate.dictionary.controller.js" />
+    <Content Include="App_Plugins\AutoTranslate\js\autotranslate.content.controller.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

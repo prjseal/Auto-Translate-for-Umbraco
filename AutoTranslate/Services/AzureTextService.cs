@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AutoTranslate.Services
 {
-    public class TextService : ITextService
+    public class AzureTextService : ITextService
     {
         public async Task<string> MakeTextRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages)
         {
