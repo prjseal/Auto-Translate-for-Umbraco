@@ -64,30 +64,58 @@ namespace AutoTranslate.Controllers
 
             if(dictionaryItem != null)
             {
-                var valueToTranslate = dictionaryItem.Translations.FirstOrDefault(x => x.LanguageId == defaultLanguage.Value);
+                var valueToTranslate = dictionaryItem.Translations.FirstOrDefault(x => x.LanguageId == defaultLanguage.Value)?.Value;
                 
-                if(valueToTranslate == null || (string.IsNullOrEmpty(valueToTranslate.Value) && apiInstruction.FallbackToKey))
+                if(valueToTranslate == null || (string.IsNullOrEmpty(valueToTranslate) && apiInstruction.FallbackToKey))
                 {
-                    //get name or alias of item as fallback
+                    valueToTranslate = dictionaryItem.ItemKey;
                 }
-                
-                if(valueToTranslate != null && !string.IsNullOrWhiteSpace(valueToTranslate.Value))
-                {
-                    foreach(var translation in dictionaryItem.Translations)
-                    {
-                        var cultureToTranslateTo = allLanguages.FirstOrDefault(x => x.Id == translation.LanguageId).IsoCode;
 
-                        if(string.IsNullOrWhiteSpace(translation.Value))
-                        {
-                            var result = _textService.MakeTextRequestAsync(valueToTranslate.Value, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
-                            JToken translatedValue = GetTranslatedValue(result);
-                            translation.Value = translatedValue.ToString();
-                        }
+                if(valueToTranslate != null && !string.IsNullOrWhiteSpace(valueToTranslate))
+                {
+                    if(dictionaryItem.Translations == null || !dictionaryItem.Translations.Any())
+                    {
+                        AddDictionaryTranslationsForAllLanguages(subscriptionKey, uriBase, dictionaryItem, defaultLanguage, allLanguages, valueToTranslate);
+                    }
+                    else
+                    {
+                        UpdateDictionaryTranslations(subscriptionKey, uriBase, dictionaryItem, allLanguages, valueToTranslate);
                     }
                     _localizationService.Save(dictionaryItem);
+
                 }
             }
             return true;
+        }
+
+        private void UpdateDictionaryTranslations(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate)
+        {
+            foreach (var translation in dictionaryItem.Translations)
+            {
+                var cultureToTranslateTo = allLanguages.FirstOrDefault(x => x.Id == translation.LanguageId).IsoCode;
+
+                if (string.IsNullOrWhiteSpace(translation.Value))
+                {
+                    var result = _textService.MakeTextRequestAsync(valueToTranslate, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
+                    JToken translatedValue = GetTranslatedValue(result);
+                    translation.Value = translatedValue.ToString();
+                }
+            }
+        }
+
+        private void AddDictionaryTranslationsForAllLanguages(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, int? defaultLanguage, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate)
+        {
+            _localizationService.AddOrUpdateDictionaryValue(dictionaryItem, allLanguages.FirstOrDefault(x => x.Id == defaultLanguage), valueToTranslate);
+            if (allLanguages != null && allLanguages.Any() && allLanguages.Count() > 1)
+            {
+                var otherLanguages = allLanguages.Where(x => x.Id != defaultLanguage);
+                foreach (var language in otherLanguages)
+                {
+                    var result = _textService.MakeTextRequestAsync(valueToTranslate, subscriptionKey, uriBase, new string[] { language.IsoCode });
+                    JToken translatedValue = GetTranslatedValue(result);
+                    _localizationService.AddOrUpdateDictionaryValue(dictionaryItem, language, translatedValue.ToString());
+                }
+            }
         }
 
         private List<int> GetContentIdsFromDescendants(int nodeId)
