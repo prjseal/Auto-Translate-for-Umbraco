@@ -8,6 +8,7 @@ using Umbraco.Web;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
+using Umbraco.Core.Models;
 
 namespace AutoTranslate.Controllers
 {
@@ -18,6 +19,10 @@ namespace AutoTranslate.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly IContentService _contentService;
+
+        private string _subscriptionKey => ConfigurationManager.AppSettings["AzureTranslateSubscriptionKey"];
+        private string _uriBase => ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
+        private string _defaultLanguageCode => _localizationService.GetDefaultLanguageIsoCode();
 
         public UtcaBackofficeApiController(ITextService textService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
         {
@@ -30,50 +35,84 @@ namespace AutoTranslate.Controllers
         [System.Web.Http.HttpPost]
         public bool GetTranslatedText(ApiInstruction apiInstruction)
         {
-            string subscriptionKey = ConfigurationManager.AppSettings["AzureTranslateSubscriptionKey"];
-            string uriBase = ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
-            var defaultLanguageCode = _localizationService.GetDefaultLanguageIsoCode();
+            var content = _contentService.GetById(apiInstruction.NodeId);
 
-            List<int> contentIds = new List<int>() { apiInstruction.NodeId };
-            if (apiInstruction.IncludeDescendants)
+            if(content != null)
             {
-                contentIds.AddRange(GetContentIdsFromDescendants(apiInstruction.NodeId));
+                TranslateContentItem(apiInstruction.CurrentCulture, _subscriptionKey, _uriBase, content, _defaultLanguageCode);
 
+                if (apiInstruction.IncludeDescendants)
+                {
+                    int pageIndex = 0;
+                    int pageSize = 10;
+                    long totalRecords = 0;
+                    totalRecords = TranslatePageOfContentItems(apiInstruction, _subscriptionKey, _uriBase, _defaultLanguageCode, pageIndex, pageSize);
+
+                    if (totalRecords > pageSize)
+                    {
+                        pageIndex++;
+                        while (totalRecords >= pageSize * pageIndex + 1)
+                        {
+                            totalRecords = TranslatePageOfContentItems(apiInstruction, _subscriptionKey, _uriBase, _defaultLanguageCode, pageIndex, pageSize);
+                            pageIndex++;
+                        }
+                    }
+                }
             }
 
-
-            foreach (int id in contentIds)
-            {
-                TranslateContentItem(apiInstruction.CurrentCulture, subscriptionKey, uriBase, id, defaultLanguageCode);
-            }
             return true;
         }
 
+        private long TranslatePageOfContentItems(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, string defaultLanguageCode, int pageIndex, int pageSize)
+        {
+            long totalRecords;
+            var descendants = _contentService.GetPagedDescendants(apiInstruction.NodeId, pageIndex, pageSize, out totalRecords);
+            foreach (var contentItem in descendants)
+            {
+                TranslateContentItem(apiInstruction.CurrentCulture, subscriptionKey, uriBase, contentItem, defaultLanguageCode);
+            }
 
+            return totalRecords;
+        }
 
         [System.Web.Http.HttpPost]
         public bool TranslateDictionaryItems(ApiInstruction apiInstruction)
         {
-            string subscriptionKey = ConfigurationManager.AppSettings["AzureTranslateSubscriptionKey"];
-            string uriBase = ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
-            var defaultLanguageCode = _localizationService.GetDefaultLanguageIsoCode();
-
             var dictionaryItem = _localizationService.GetDictionaryItemById(apiInstruction.NodeId);
-            var defaultLanguage = _localizationService.GetLanguageIdByIsoCode(defaultLanguageCode);
+            var defaultLanguage = _localizationService.GetLanguageIdByIsoCode(_defaultLanguageCode);
             var allLanguages = _localizationService.GetAllLanguages();
 
-            if(dictionaryItem != null)
+            TranslateDictionaryItem(apiInstruction, _subscriptionKey, _uriBase, dictionaryItem, defaultLanguage, allLanguages);
+
+            if (apiInstruction.IncludeDescendants)
+            {
+                var dictionaryDescendants = _localizationService.GetDictionaryItemDescendants(dictionaryItem.Key);
+                if(dictionaryDescendants != null && dictionaryDescendants.Any())
+                {
+                    foreach(var descendantDictionaryItem in dictionaryDescendants)
+                    {
+                        TranslateDictionaryItem(apiInstruction, _subscriptionKey, _uriBase, descendantDictionaryItem, defaultLanguage, allLanguages);
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        private void TranslateDictionaryItem(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, int? defaultLanguage, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages)
+        {
+            if (dictionaryItem != null)
             {
                 var valueToTranslate = dictionaryItem.Translations.FirstOrDefault(x => x.LanguageId == defaultLanguage.Value)?.Value;
-                
-                if(valueToTranslate == null || (string.IsNullOrEmpty(valueToTranslate) && apiInstruction.FallbackToKey))
+
+                if (valueToTranslate == null || (string.IsNullOrEmpty(valueToTranslate) && apiInstruction.FallbackToKey))
                 {
                     valueToTranslate = dictionaryItem.ItemKey;
                 }
 
-                if(valueToTranslate != null && !string.IsNullOrWhiteSpace(valueToTranslate))
+                if (valueToTranslate != null && !string.IsNullOrWhiteSpace(valueToTranslate))
                 {
-                    if(dictionaryItem.Translations == null || !dictionaryItem.Translations.Any())
+                    if (dictionaryItem.Translations == null || !dictionaryItem.Translations.Any())
                     {
                         AddDictionaryTranslationsForAllLanguages(subscriptionKey, uriBase, dictionaryItem, defaultLanguage, allLanguages, valueToTranslate);
                     }
@@ -82,10 +121,8 @@ namespace AutoTranslate.Controllers
                         UpdateDictionaryTranslations(subscriptionKey, uriBase, dictionaryItem, allLanguages, valueToTranslate);
                     }
                     _localizationService.Save(dictionaryItem);
-
                 }
             }
-            return true;
         }
 
         private void UpdateDictionaryTranslations(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate)
@@ -118,32 +155,8 @@ namespace AutoTranslate.Controllers
             }
         }
 
-        private List<int> GetContentIdsFromDescendants(int nodeId)
+        private void TranslateContentItem(string cultureToTranslateTo, string subscriptionKey, string uriBase, IContent content, string defaultLanguageCode)
         {
-            List<int> contentIds = new List<int>();
-
-            var content = _contentService.GetById(nodeId);
-            int pageIndex = 0;
-            int pageSize = 10;
-            long totalRecords = 0;
-            var descendants = _contentService.GetPagedDescendants(nodeId, pageIndex, pageSize, out totalRecords);
-            contentIds.AddRange(descendants.Select(x => x.Id));
-            if (totalRecords > pageSize)
-            {
-                pageIndex++;
-                while (totalRecords >= pageSize * pageIndex + 1)
-                {
-                    descendants = _contentService.GetPagedDescendants(nodeId, pageIndex, pageSize, out totalRecords);
-                    contentIds.AddRange(descendants.Select(x => x.Id));
-                    pageIndex++;
-                }
-            }
-            return contentIds;
-        }
-
-        private void TranslateContentItem(string cultureToTranslateTo, string subscriptionKey, string uriBase, int id, string defaultLanguageCode)
-        {
-            var content = _contentService.GetById(id);
             foreach (var property in content.Properties)
             {
                 TranslateProperty(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, property);
@@ -164,6 +177,13 @@ namespace AutoTranslate.Controllers
         }
 
         private static JToken GetTranslatedValue(Task<string> result)
+        {
+            JArray translationRequest = JArray.Parse(result.Result);
+            var translatedValue = translationRequest.First["translations"].First["text"];
+            return translatedValue;
+        }
+
+        private static JToken GetTranslatedValue(Task<string> result, string culture)
         {
             JArray translationRequest = JArray.Parse(result.Result);
             var translatedValue = translationRequest.First["translations"].First["text"];

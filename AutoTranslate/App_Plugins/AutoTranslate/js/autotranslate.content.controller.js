@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function AutoTranslate($scope, $http, editorState, $routeParams, $window) {
+    function AutoTranslateContent($scope, $http, editorState, $routeParams, $window) {
         var apiUrl;
 
         function init() {
@@ -19,7 +19,7 @@
                     CurrentCulture: culture,
                     NodeId: editorState.current.id,
                     OverwriteExistingValues: true,
-                    IncludeDescendants: false
+                    IncludeDescendants: true
                 }),
                 headers: {
                     'Content-Type': 'application/json'
@@ -32,6 +32,6 @@
         init();
     }
 
-    angular.module('umbraco').controller('AutoTranslate', AutoTranslate);
+    angular.module('umbraco').controller('AutoTranslateContent', AutoTranslateContent);
 
 })();

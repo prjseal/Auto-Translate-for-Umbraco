@@ -19,7 +19,8 @@
                     CurrentCulture: culture,
                     NodeId: editorState.current.id,
                     OverwriteExistingValues: true,
-                    IncludeDescendants: false
+                    IncludeDescendants: true,
+                    FallbackToKey: true
                 }),
                 headers: {
                     'Content-Type': 'application/json'
