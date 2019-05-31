@@ -13,7 +13,7 @@ using Umbraco.Core.Models;
 namespace AutoTranslate.Controllers
 {
     [PluginController("AutoTranslate")]
-    public class UtcaBackofficeApiController : UmbracoAuthorizedJsonController
+    public class AutoTranslateBackofficeApiController : UmbracoAuthorizedJsonController
     {
         private readonly ITextService _textService;
         private readonly ILocalizationService _localizationService;
@@ -24,7 +24,7 @@ namespace AutoTranslate.Controllers
         private string _uriBase => ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
         private string _defaultLanguageCode => _localizationService.GetDefaultLanguageIsoCode();
 
-        public UtcaBackofficeApiController(ITextService textService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
+        public AutoTranslateBackofficeApiController(ITextService textService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
         {
             _textService = textService;
             _umbracoContextAccessor = umbracoContextAccessor;
@@ -33,13 +33,13 @@ namespace AutoTranslate.Controllers
         }
 
         [System.Web.Http.HttpPost]
-        public bool GetTranslatedText(ApiInstruction apiInstruction)
+        public bool SubmitTranslateContent(ApiInstruction apiInstruction)
         {
             var content = _contentService.GetById(apiInstruction.NodeId);
 
             if(content != null)
             {
-                TranslateContentItem(apiInstruction.CurrentCulture, _subscriptionKey, _uriBase, content, _defaultLanguageCode);
+                TranslateContentItem(apiInstruction.CurrentCulture, _subscriptionKey, _uriBase, content, _defaultLanguageCode, apiInstruction.OverwriteExistingValues);
 
                 if (apiInstruction.IncludeDescendants)
                 {
@@ -69,14 +69,14 @@ namespace AutoTranslate.Controllers
             var descendants = _contentService.GetPagedDescendants(apiInstruction.NodeId, pageIndex, pageSize, out totalRecords);
             foreach (var contentItem in descendants)
             {
-                TranslateContentItem(apiInstruction.CurrentCulture, subscriptionKey, uriBase, contentItem, defaultLanguageCode);
+                TranslateContentItem(apiInstruction.CurrentCulture, subscriptionKey, uriBase, contentItem, defaultLanguageCode, apiInstruction.OverwriteExistingValues);
             }
 
             return totalRecords;
         }
 
         [System.Web.Http.HttpPost]
-        public bool TranslateDictionaryItems(ApiInstruction apiInstruction)
+        public bool SubmitTranslateDictionary(ApiInstruction apiInstruction)
         {
             var dictionaryItem = _localizationService.GetDictionaryItemById(apiInstruction.NodeId);
             var defaultLanguage = _localizationService.GetLanguageIdByIsoCode(_defaultLanguageCode);
@@ -118,20 +118,20 @@ namespace AutoTranslate.Controllers
                     }
                     else
                     {
-                        UpdateDictionaryTranslations(subscriptionKey, uriBase, dictionaryItem, allLanguages, valueToTranslate);
+                        UpdateDictionaryTranslations(subscriptionKey, uriBase, dictionaryItem, allLanguages, valueToTranslate, apiInstruction.OverwriteExistingValues);
                     }
                     _localizationService.Save(dictionaryItem);
                 }
             }
         }
 
-        private void UpdateDictionaryTranslations(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate)
+        private void UpdateDictionaryTranslations(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate, bool overwriteExistingValue)
         {
             foreach (var translation in dictionaryItem.Translations)
             {
                 var cultureToTranslateTo = allLanguages.FirstOrDefault(x => x.Id == translation.LanguageId).IsoCode;
 
-                if (string.IsNullOrWhiteSpace(translation.Value))
+                if (string.IsNullOrWhiteSpace(translation.Value) || overwriteExistingValue)
                 {
                     var result = _textService.MakeTextRequestAsync(valueToTranslate, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
                     JToken translatedValue = GetTranslatedValue(result);
@@ -140,7 +140,7 @@ namespace AutoTranslate.Controllers
             }
         }
 
-        private void AddDictionaryTranslationsForAllLanguages(string subscriptionKey, string uriBase, Umbraco.Core.Models.IDictionaryItem dictionaryItem, int? defaultLanguage, IEnumerable<Umbraco.Core.Models.ILanguage> allLanguages, string valueToTranslate)
+        private void AddDictionaryTranslationsForAllLanguages(string subscriptionKey, string uriBase, IDictionaryItem dictionaryItem, int? defaultLanguage, IEnumerable<ILanguage> allLanguages, string valueToTranslate)
         {
             _localizationService.AddOrUpdateDictionaryValue(dictionaryItem, allLanguages.FirstOrDefault(x => x.Id == defaultLanguage), valueToTranslate);
             if (allLanguages != null && allLanguages.Any() && allLanguages.Count() > 1)
@@ -155,20 +155,35 @@ namespace AutoTranslate.Controllers
             }
         }
 
-        private void TranslateContentItem(string cultureToTranslateTo, string subscriptionKey, string uriBase, IContent content, string defaultLanguageCode)
+        private void TranslateContentItem(string cultureToTranslateTo, string subscriptionKey, string uriBase, IContent content, string defaultLanguageCode, bool overwriteExistingValue)
         {
+            TranslateName(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, overwriteExistingValue);
             foreach (var property in content.Properties)
             {
-                TranslateProperty(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, property);
+                TranslateProperty(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, property, overwriteExistingValue);
             }
             _contentService.Save(content);
         }
 
-        private void TranslateProperty(string cultureToTranslateTo, string subscriptionKey, string uriBase, string defaultLanguageCode, Umbraco.Core.Models.IContent content, Umbraco.Core.Models.Property property)
+        private void TranslateName(string cultureToTranslateTo, string subscriptionKey, string uriBase, string defaultLanguageCode, IContent content, bool overwriteExistingValue)
+        {
+            var currentCultureNameValue = content.GetCultureName(cultureToTranslateTo);
+            var defaultCultureNameValue = content.GetCultureName(defaultLanguageCode);
+            if (!string.IsNullOrWhiteSpace(defaultCultureNameValue) 
+                && (overwriteExistingValue || string.IsNullOrWhiteSpace(currentCultureNameValue)))
+            {
+                var result = _textService.MakeTextRequestAsync(defaultCultureNameValue, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
+                JToken translatedValue = GetTranslatedValue(result);
+                content.SetCultureName(translatedValue.ToString(), cultureToTranslateTo);
+            }
+        }
+
+        private void TranslateProperty(string cultureToTranslateTo, string subscriptionKey, string uriBase, string defaultLanguageCode, IContent content, Property property, bool overwriteExistingValue)
         {
             var currentValue = content.GetValue<string>(property.Alias, cultureToTranslateTo);
             var propertyValue = content.GetValue<string>(property.Alias, defaultLanguageCode);
-            if (!string.IsNullOrWhiteSpace(propertyValue))
+            if (!string.IsNullOrWhiteSpace(propertyValue) 
+                && (overwriteExistingValue || string.IsNullOrWhiteSpace(currentValue)))
             {
                 var result = _textService.MakeTextRequestAsync(propertyValue, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
                 JToken translatedValue = GetTranslatedValue(result);

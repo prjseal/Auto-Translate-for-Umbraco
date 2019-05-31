@@ -8,16 +8,15 @@
         vm.overwriteExisting = false;
 
         function init() {
-            var culture = $routeParams.cculture ? $routeParams.cculture : $routeParams.mculture;
-            apiUrl = Umbraco.Sys.ServerVariables["AutoTranslate"]["TextTranslateApiUrl"];
+            apiUrl = Umbraco.Sys.ServerVariables["AutoTranslate"]["ApiUrl"];
         }
 
-        $scope.getTranslatedText = function () {
+        $scope.submitTranslateContent = function () {
             var culture = $routeParams.cculture ? $routeParams.cculture : $routeParams.mculture;
             vm.loading = true;
             $http({
                 method: 'POST',
-                url: apiUrl + 'GetTranslatedText/',
+                url: apiUrl + 'SubmitTranslateContent/',
                 data: JSON.stringify({
                     CurrentCulture: culture,
                     NodeId: editorState.current.id,
@@ -28,7 +27,6 @@
                     'Content-Type': 'application/json'
                 }
             }).then(function (response) {
-                vm.loading = false;
                 $window.location.reload(true);
             });
         };

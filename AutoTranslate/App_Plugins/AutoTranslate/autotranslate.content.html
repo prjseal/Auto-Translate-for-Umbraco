@@ -1,14 +1,18 @@
-﻿<div class="umb-editor" ng-controller="AutoTranslateContent as vm">
-    <div class="umb-dialog-body form-horizontal">
+﻿<div ng-controller="AutoTranslateContent as vm">
+    <div class="umb-dialog-body form-horizontal" ng-cloak>
         <div class="umb-pane">
 
             <div ng-show="!vm.loading">
-                <p>Click the button below to auto translate the content for the language selected, using the from the default language.</p>
+                <p class="abstract" ng-hide="success">
+                    Auto translate the content for the language selected, using the from the default language.
+                </p>
+
                 <umb-pane>
                     <umb-control-group localize="label" label="@defaultdialogs_includeDescendants">
                         <umb-toggle checked="vm.includeDescendants" on-click="toggle('recursive')"></umb-toggle>
                     </umb-control-group>
-
+                </umb-pane>
+                <umb-pane>
                     <umb-control-group localize="label" label="Overwrite existing values">
                         <umb-toggle checked="vm.overwriteExisting" on-click="toggle('overwrite')"></umb-toggle>
                     </umb-control-group>
@@ -24,6 +28,6 @@
         <a class="btn btn-link" ng-click="closeDialog()" ng-show="!busy">
             <localize key="general_cancel">Cancel</localize>
         </a>
-        <button class="btn btn-primary" ng-click="getTranslatedText()">Auto Translate</button>
+        <button class="btn btn-primary" ng-click="submitTranslateContent()">Auto Translate</button>
     </div>
 </div>

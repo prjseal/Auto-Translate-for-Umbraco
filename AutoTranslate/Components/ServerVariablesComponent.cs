@@ -39,9 +39,9 @@ namespace AutoTranslate.Components
                 e.Add("AutoTranslate", new Dictionary<string, object>
                 {
                     {
-                        "TextTranslateApiUrl",
-                        urlHelper.GetUmbracoApiServiceBaseUrl<UtcaBackofficeApiController>(
-                            controller => controller.GetTranslatedText(new UtcaBackofficeApiController.ApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
+                        "ApiUrl",
+                        urlHelper.GetUmbracoApiServiceBaseUrl<AutoTranslateBackofficeApiController>(
+                            controller => controller.SubmitTranslateContent(new AutoTranslateBackofficeApiController.ApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
                     }
                 });
         }

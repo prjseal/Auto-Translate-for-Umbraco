@@ -1,9 +1,29 @@
-﻿<div class="umb-editor" ng-controller="AutoTranslateDictionary as vm">
-    <div class="umb-dialog-body form-horizontal">
+﻿<div ng-controller="AutoTranslateDictionary as vm">
+    <div class="umb-dialog-body form-horizontal" ng-cloak>
         <div class="umb-pane">
-            <div class="umb-pane">
-                <p>Click the button below to auto translate the dictionary item for the language selected, using either the value from the default language or the name of the item if you choose that option.</p>
+
+            <div ng-show="!vm.loading">
+                <p class="abstract" ng-hide="success">
+                    Auto translate this dictionary item and its descendants, if the option is checked.
+                </p>
+
+                <umb-pane>
+                    <umb-control-group localize="label" label="@defaultdialogs_includeDescendants">
+                        <umb-toggle checked="vm.includeDescendants" on-click="toggle('recursive')"></umb-toggle>
+                    </umb-control-group>
+                </umb-pane>
+                <umb-pane>
+                    <umb-control-group localize="label" label="Fallback to key if default language value is empty">
+                        <umb-toggle checked="vm.fallbackToKey" on-click="toggle('fallbackToKey')"></umb-toggle>
+                    </umb-control-group>
+                </umb-pane>
+                <umb-pane>
+                    <umb-control-group localize="label" label="Overwrite existing values">
+                        <umb-toggle checked="vm.overwriteExisting" on-click="toggle('overwrite')"></umb-toggle>
+                    </umb-control-group>
+                </umb-pane>
             </div>
+
             <umb-load-indicator ng-if="vm.loading">
             </umb-load-indicator>
 
@@ -13,6 +33,6 @@
         <a class="btn btn-link" ng-click="closeDialog()" ng-show="!busy">
             <localize key="general_cancel">Cancel</localize>
         </a>
-        <button class="btn btn-primary" ng-click="getTranslatedText()">Auto Translate</button>
+        <button class="btn btn-primary" ng-click="submitTranslateDictionary()">Auto Translate</button>
     </div>
 </div>
