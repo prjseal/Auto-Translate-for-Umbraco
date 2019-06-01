@@ -16,9 +16,9 @@ namespace AutoTranslate.Controllers
         private readonly IDictionaryTranslationService _dictionaryTranslationService;
         private readonly IContentService _contentService;
 
-        private string _subscriptionKey => ConfigurationManager.AppSettings["AzureTranslateSubscriptionKey"];
-        private string _uriBase => ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
-        private string _defaultLanguageCode => _localizationService.GetDefaultLanguageIsoCode();
+        private string SubscriptionKey => ConfigurationManager.AppSettings["AzureTranslateSubscriptionKey"];
+        private string UriBase => ConfigurationManager.AppSettings["AzureTranslateApiUrl"];
+        private string DefaultLanguageCode => _localizationService.GetDefaultLanguageIsoCode();
 
         public AutoTranslateBackofficeApiController(ILocalizationService localizationService, 
             IDictionaryTranslationService dictionaryTranslationService, 
@@ -36,25 +36,24 @@ namespace AutoTranslate.Controllers
         {
             var content = _contentService.GetById(apiInstruction.NodeId);
             var allLanguages = _localizationService.GetAllLanguages();
-            var defaultLanguage = allLanguages.FirstOrDefault(x => x.IsoCode == _defaultLanguageCode);
+            var defaultLanguage = allLanguages.FirstOrDefault(x => x.IsoCode == DefaultLanguageCode);
 
             if (content != null)
             {
-                _contentTranslationService.TranslateContentItem(apiInstruction, _subscriptionKey, _uriBase, content, defaultLanguage);
+                _contentTranslationService.TranslateContentItem(apiInstruction, SubscriptionKey, UriBase, content, defaultLanguage);
 
                 if (apiInstruction.IncludeDescendants)
                 {
                     int pageIndex = 0;
                     int pageSize = 10;
-                    long totalRecords = 0;
-                    totalRecords = _contentTranslationService.TranslatePageOfContentItems(apiInstruction, _subscriptionKey, _uriBase, defaultLanguage, pageIndex, pageSize);
+                    var totalRecords = _contentTranslationService.TranslatePageOfContentItems(apiInstruction, SubscriptionKey, UriBase, defaultLanguage, pageIndex, pageSize);
 
                     if (totalRecords > pageSize)
                     {
                         pageIndex++;
                         while (totalRecords >= pageSize * pageIndex + 1)
                         {
-                            totalRecords = _contentTranslationService.TranslatePageOfContentItems(apiInstruction, _subscriptionKey, _uriBase, defaultLanguage, pageIndex, pageSize);
+                            totalRecords = _contentTranslationService.TranslatePageOfContentItems(apiInstruction, SubscriptionKey, UriBase, defaultLanguage, pageIndex, pageSize);
                             pageIndex++;
                         }
                     }
@@ -69,18 +68,20 @@ namespace AutoTranslate.Controllers
         {
             var dictionaryItem = _localizationService.GetDictionaryItemById(apiInstruction.NodeId);
             var allLanguages = _localizationService.GetAllLanguages();
-            var defaultLanguage = allLanguages.FirstOrDefault(x => x.IsoCode == _defaultLanguageCode);
+            var allLanguagesList = allLanguages.ToList();
+            var defaultLanguage = allLanguagesList.FirstOrDefault(x => x.IsoCode == DefaultLanguageCode);
 
-            _dictionaryTranslationService.TranslateDictionaryItem(apiInstruction, _subscriptionKey, _uriBase, dictionaryItem, defaultLanguage, allLanguages);
+            _dictionaryTranslationService.TranslateDictionaryItem(apiInstruction, SubscriptionKey, UriBase, dictionaryItem, defaultLanguage, allLanguagesList);
 
             if (apiInstruction.IncludeDescendants)
             {
                 var dictionaryDescendants = _localizationService.GetDictionaryItemDescendants(dictionaryItem.Key);
-                if(dictionaryDescendants != null && dictionaryDescendants.Any())
+                var descendantDictionaryItems = dictionaryDescendants.ToList();
+                if(descendantDictionaryItems.Any())
                 {
-                    foreach(var descendantDictionaryItem in dictionaryDescendants)
+                    foreach(var descendantDictionaryItem in descendantDictionaryItems)
                     {
-                        _dictionaryTranslationService.TranslateDictionaryItem(apiInstruction, _subscriptionKey, _uriBase, descendantDictionaryItem, defaultLanguage, allLanguages);
+                        _dictionaryTranslationService.TranslateDictionaryItem(apiInstruction, SubscriptionKey, UriBase, descendantDictionaryItem, defaultLanguage, allLanguagesList);
                     }
                 }
             }

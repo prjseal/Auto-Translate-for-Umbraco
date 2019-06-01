@@ -9,14 +9,12 @@ namespace AutoTranslate.Services
     public class ContentTranslationService : IContentTranslationService
     {
         private readonly ITextTranslationService _textTranslationService;
-        private readonly ILocalizationService _localizationService;
         private readonly IContentService _contentService;
 
-        public ContentTranslationService(ITextTranslationService textTranslationService, IContentService contentService, ILocalizationService localizationService)
+        public ContentTranslationService(ITextTranslationService textTranslationService, IContentService contentService)
         {
             _textTranslationService = textTranslationService;
             _contentService = contentService;
-            _localizationService = localizationService;
         }
 
         public long TranslatePageOfContentItems(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, int pageIndex, int pageSize)
@@ -48,7 +46,7 @@ namespace AutoTranslate.Services
             if (!string.IsNullOrWhiteSpace(defaultCultureNameValue)
                 && (apiInstruction.OverwriteExistingValues || string.IsNullOrWhiteSpace(currentCultureNameValue)))
             {
-                var result = _textTranslationService.MakeTranslationRequestAsync(defaultCultureNameValue, subscriptionKey, uriBase, new string[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
+                var result = _textTranslationService.MakeTranslationRequestAsync(defaultCultureNameValue, subscriptionKey, uriBase, new[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
                 JToken translatedValue = CommonHelpers.GetTranslatedValue(result);
                 content.SetCultureName(translatedValue.ToString(), apiInstruction.CurrentCulture);
             }
@@ -61,7 +59,7 @@ namespace AutoTranslate.Services
             if (!string.IsNullOrWhiteSpace(propertyValue)
                 && (apiInstruction.OverwriteExistingValues || string.IsNullOrWhiteSpace(currentValue)))
             {
-                var result = _textTranslationService.MakeTranslationRequestAsync(propertyValue, subscriptionKey, uriBase, new string[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
+                var result = _textTranslationService.MakeTranslationRequestAsync(propertyValue, subscriptionKey, uriBase, new[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
                 JToken translatedValue = CommonHelpers.GetTranslatedValue(result);
                 content.SetValue(property.Alias, translatedValue, apiInstruction.CurrentCulture);
             }

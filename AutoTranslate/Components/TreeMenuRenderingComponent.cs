@@ -1,5 +1,4 @@
 ﻿using Umbraco.Core.Composing;
-using Umbraco.Core.Services;
 using Umbraco.Web;
 using Umbraco.Web.Trees;
 
@@ -8,16 +7,10 @@ namespace AutoTranslate.Components
     public class TreeMenuRenderingComponent : IComponent
     {
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
-        private readonly IContentService _contentService;
-        private readonly IDomainService _domainService;
-        private readonly ILocalizationService _localizationService;
 
-        public TreeMenuRenderingComponent(IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, IDomainService domainService, ILocalizationService localizationService)
+        public TreeMenuRenderingComponent(IUmbracoContextAccessor umbracoContextAccessor)
         {
             _umbracoContextAccessor = umbracoContextAccessor;
-            _contentService = contentService;
-            _domainService = domainService;
-            _localizationService = localizationService;
         }
 
         public void Initialize()
@@ -35,9 +28,7 @@ namespace AutoTranslate.Components
             {
                 var nodeId = e.NodeId;
                 var contentItem = _umbracoContextAccessor.UmbracoContext.ContentCache.GetById(int.Parse(nodeId));
-
-                var textArea = contentItem.Value("textarea", "en-US");
-                               
+                
                 if (contentItem != null)
                 {
                     var menuItem = new Umbraco.Web.Models.Trees.MenuItem("autoTranslate", "Auto Translate..");
