@@ -1,6 +1,6 @@
-﻿using Umbraco.Core;
+﻿using AutoTranslate.Components;
+using Umbraco.Core;
 using Umbraco.Core.Composing;
-using AutoTranslate.Components;
 
 namespace AutoTranslate.Composers
 {

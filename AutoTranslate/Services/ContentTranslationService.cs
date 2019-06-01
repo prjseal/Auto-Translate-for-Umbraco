@@ -3,7 +3,6 @@ using AutoTranslate.Models;
 using Newtonsoft.Json.Linq;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
-using Umbraco.Web;
 
 namespace AutoTranslate.Services
 {
@@ -11,13 +10,11 @@ namespace AutoTranslate.Services
     {
         private readonly ITextTranslationService _textTranslationService;
         private readonly ILocalizationService _localizationService;
-        private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly IContentService _contentService;
 
-        public ContentTranslationService(ITextTranslationService textTranslationService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
+        public ContentTranslationService(ITextTranslationService textTranslationService, IContentService contentService, ILocalizationService localizationService)
         {
             _textTranslationService = textTranslationService;
-            _umbracoContextAccessor = umbracoContextAccessor;
             _contentService = contentService;
             _localizationService = localizationService;
         }

@@ -3,7 +3,6 @@ using AutoTranslate.Services;
 using System.Configuration;
 using System.Linq;
 using Umbraco.Core.Services;
-using Umbraco.Web;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Mvc;
 
