@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -6,13 +7,19 @@ using System.Threading.Tasks;
 
 namespace AutoTranslate.Services
 {
-    public class AzureTranslationService : ITranslationService
+    public class AzureTranslationService : ITextTranslationService
     {
-        public async Task<string> MakeTranslationRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages)
+        public async Task<string> MakeTranslationRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages, string translateFrom)
         {
             try
             {
                 string languageString = "";
+
+                if(!string.IsNullOrWhiteSpace(translateFrom))
+                {
+                    languageString += "&from=" + translateFrom;
+                }
+
                 foreach(var language in languages)
                 {
                     languageString += "&to=" + language;
@@ -36,6 +43,20 @@ namespace AutoTranslate.Services
             {
                 return "";
             }
+        }
+
+        public static JToken GetTranslatedValue(Task<string> result)
+        {
+            JArray translationRequest = JArray.Parse(result.Result);
+            var translatedValue = translationRequest.First["translations"].First["text"];
+            return translatedValue;
+        }
+
+        public static JToken GetTranslatedValue(Task<string> result, string culture)
+        {
+            JArray translationRequest = JArray.Parse(result.Result);
+            var translatedValue = translationRequest.First["translations"].First["text"];
+            return translatedValue;
         }
     }
 }

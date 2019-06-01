@@ -9,64 +9,64 @@ namespace AutoTranslate.Services
 {
     public class ContentTranslationService : IContentTranslationService
     {
-        private readonly ITranslationService _textService;
+        private readonly ITextTranslationService _textTranslationService;
         private readonly ILocalizationService _localizationService;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly IContentService _contentService;
 
-        public ContentTranslationService(ITranslationService textService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
+        public ContentTranslationService(ITextTranslationService textTranslationService, IUmbracoContextAccessor umbracoContextAccessor, IContentService contentService, ILocalizationService localizationService)
         {
-            _textService = textService;
+            _textTranslationService = textTranslationService;
             _umbracoContextAccessor = umbracoContextAccessor;
             _contentService = contentService;
             _localizationService = localizationService;
         }
 
-        public long TranslatePageOfContentItems(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, string defaultLanguageCode, int pageIndex, int pageSize)
+        public long TranslatePageOfContentItems(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, int pageIndex, int pageSize)
         {
             long totalRecords;
             var descendants = _contentService.GetPagedDescendants(apiInstruction.NodeId, pageIndex, pageSize, out totalRecords);
             foreach (var contentItem in descendants)
             {
-                TranslateContentItem(apiInstruction.CurrentCulture, subscriptionKey, uriBase, contentItem, defaultLanguageCode, apiInstruction.OverwriteExistingValues);
+                TranslateContentItem(apiInstruction, subscriptionKey, uriBase, contentItem, defaultLanguage);
             }
 
             return totalRecords;
         }
 
-        public void TranslateContentItem(string cultureToTranslateTo, string subscriptionKey, string uriBase, IContent content, string defaultLanguageCode, bool overwriteExistingValue)
+        public void TranslateContentItem(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, IContent content, ILanguage defaultLanguage)
         {
-            TranslateName(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, overwriteExistingValue);
+            TranslateName(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content);
             foreach (var property in content.Properties)
             {
-                TranslateProperty(cultureToTranslateTo, subscriptionKey, uriBase, defaultLanguageCode, content, property, overwriteExistingValue);
+                TranslateProperty(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content, property);
             }
             _contentService.Save(content);
         }
 
-        public void TranslateName(string cultureToTranslateTo, string subscriptionKey, string uriBase, string defaultLanguageCode, IContent content, bool overwriteExistingValue)
+        public void TranslateName(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content)
         {
-            var currentCultureNameValue = content.GetCultureName(cultureToTranslateTo);
-            var defaultCultureNameValue = content.GetCultureName(defaultLanguageCode);
+            var currentCultureNameValue = content.GetCultureName(apiInstruction.CurrentCulture);
+            var defaultCultureNameValue = content.GetCultureName(defaultLanguage.IsoCode);
             if (!string.IsNullOrWhiteSpace(defaultCultureNameValue)
-                && (overwriteExistingValue || string.IsNullOrWhiteSpace(currentCultureNameValue)))
+                && (apiInstruction.OverwriteExistingValues || string.IsNullOrWhiteSpace(currentCultureNameValue)))
             {
-                var result = _textService.MakeTranslationRequestAsync(defaultCultureNameValue, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
+                var result = _textTranslationService.MakeTranslationRequestAsync(defaultCultureNameValue, subscriptionKey, uriBase, new string[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
                 JToken translatedValue = CommonHelpers.GetTranslatedValue(result);
-                content.SetCultureName(translatedValue.ToString(), cultureToTranslateTo);
+                content.SetCultureName(translatedValue.ToString(), apiInstruction.CurrentCulture);
             }
         }
 
-        public void TranslateProperty(string cultureToTranslateTo, string subscriptionKey, string uriBase, string defaultLanguageCode, IContent content, Property property, bool overwriteExistingValue)
+        public void TranslateProperty(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content, Property property)
         {
-            var currentValue = content.GetValue<string>(property.Alias, cultureToTranslateTo);
-            var propertyValue = content.GetValue<string>(property.Alias, defaultLanguageCode);
+            var currentValue = content.GetValue<string>(property.Alias, apiInstruction.CurrentCulture);
+            var propertyValue = content.GetValue<string>(property.Alias, defaultLanguage.IsoCode);
             if (!string.IsNullOrWhiteSpace(propertyValue)
-                && (overwriteExistingValue || string.IsNullOrWhiteSpace(currentValue)))
+                && (apiInstruction.OverwriteExistingValues || string.IsNullOrWhiteSpace(currentValue)))
             {
-                var result = _textService.MakeTranslationRequestAsync(propertyValue, subscriptionKey, uriBase, new string[] { cultureToTranslateTo });
+                var result = _textTranslationService.MakeTranslationRequestAsync(propertyValue, subscriptionKey, uriBase, new string[] { apiInstruction.CurrentCulture }, defaultLanguage.IsoCode);
                 JToken translatedValue = CommonHelpers.GetTranslatedValue(result);
-                content.SetValue(property.Alias, translatedValue, cultureToTranslateTo);
+                content.SetValue(property.Alias, translatedValue, apiInstruction.CurrentCulture);
             }
         }
     }

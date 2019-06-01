@@ -2,8 +2,8 @@
 
 namespace AutoTranslate.Services
 {
-    public interface ITranslationService
+    public interface ITextTranslationService
     {
-        Task<string> MakeTranslationRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages);
+        Task<string> MakeTranslationRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages, string translateFrom);
     }
 }

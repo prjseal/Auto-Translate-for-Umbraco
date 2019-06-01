@@ -9,7 +9,7 @@ namespace AutoTranslate.Composers
     {
         public void Compose(Composition composition)
         {
-            composition.Register<ITranslationService, AzureTranslationService>();
+            composition.Register<ITextTranslationService, AzureTranslationService>();
             composition.Register<IContentTranslationService, ContentTranslationService>();
             composition.Register<IDictionaryTranslationService, DictionaryTranslationService>();
         }
