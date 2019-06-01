@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function AutoTranslateDictionary($scope, $http, editorState, $routeParams, $window, navigationService) {
+    function AutoTranslateDictionary($scope, $http, $routeParams, $window, navigationService) {
         var apiUrl;
         var vm = this;
         vm.includeDescendants = true;
@@ -20,7 +20,7 @@
                 url: apiUrl + 'SubmitTranslateDictionary/',
                 data: JSON.stringify({
                     CurrentCulture: culture,
-                    NodeId: editorState.current.id,
+                    NodeId: $scope.currentNode.id,
                     OverwriteExistingValues: vm.overwriteExisting,
                     IncludeDescendants: vm.includeDescendants,
                     FallbackToKey: vm.fallbackToKey

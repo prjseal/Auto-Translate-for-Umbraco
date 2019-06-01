@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    function AutoTranslateContent($scope, $http, editorState, $routeParams, $window, navigationService) {
+    function AutoTranslateContent($scope, $http, $routeParams, $window, navigationService) {
         var apiUrl;
         var vm = this;
         vm.includeDescendants = false;
@@ -19,7 +19,7 @@
                 url: apiUrl + 'SubmitTranslateContent/',
                 data: JSON.stringify({
                     CurrentCulture: culture,
-                    NodeId: editorState.current.id,
+                    NodeId: $scope.currentNode.id,
                     OverwriteExistingValues: vm.overwriteExisting,
                     IncludeDescendants: vm.includeDescendants
                 }),
