@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AutoTranslate.Controllers;
+using AutoTranslate.Models;
+using System;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.Mvc;
@@ -6,7 +8,6 @@ using System.Web.Routing;
 using Umbraco.Core.Composing;
 using Umbraco.Web;
 using Umbraco.Web.JavaScript;
-using AutoTranslate.Controllers;
 
 namespace AutoTranslate.Components
 {
@@ -41,7 +42,7 @@ namespace AutoTranslate.Components
                     {
                         "ApiUrl",
                         urlHelper.GetUmbracoApiServiceBaseUrl<AutoTranslateBackofficeApiController>(
-                            controller => controller.SubmitTranslateContent(new AutoTranslateBackofficeApiController.ApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
+                            controller => controller.SubmitTranslateContent(new ApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
                     }
                 });
         }

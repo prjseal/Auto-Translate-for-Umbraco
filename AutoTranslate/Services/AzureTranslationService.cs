@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace AutoTranslate.Services
 {
-    public class AzureTextService : ITextService
+    public class AzureTranslationService : ITranslationService
     {
-        public async Task<string> MakeTextRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages)
+        public async Task<string> MakeTranslationRequestAsync(string textToTranslate, string subscriptionKey, string uriBase, string[] languages)
         {
             try
             {
@@ -18,7 +18,7 @@ namespace AutoTranslate.Services
                     languageString += "&to=" + language;
                 }
 
-                System.Object[] body = new System.Object[] { new { Text = textToTranslate } };
+                object[] body = new object[] { new { Text = textToTranslate } };
                 var requestBody = JsonConvert.SerializeObject(body);
 
                 using (var client = new HttpClient())

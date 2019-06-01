@@ -1,6 +1,6 @@
-﻿using Umbraco.Core;
+﻿using AutoTranslate.Services;
+using Umbraco.Core;
 using Umbraco.Core.Composing;
-using AutoTranslate.Services;
 
 namespace AutoTranslate.Composers
 {
@@ -9,7 +9,9 @@ namespace AutoTranslate.Composers
     {
         public void Compose(Composition composition)
         {
-            composition.Register<ITextService, AzureTextService>();
+            composition.Register<ITranslationService, AzureTranslationService>();
+            composition.Register<IContentTranslationService, ContentTranslationService>();
+            composition.Register<IDictionaryTranslationService, DictionaryTranslationService>();
         }
     }
 }
