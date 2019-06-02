@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>AutoTranslate</id>
+    <version>1.0.0</version>
+    <title>Auto Translate for Umbraco</title>
+    <authors>Paul Seal</authors>
+    <owners>Paul Seal</owners>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/prjseal/Auto-Translate-for-Umbraco</projectUrl>
+    <iconUrl>https://github.com/prjseal/Auto-Translate-for-Umbraco/blob/master/images/logo.png?raw=true</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>An Umbraco action menu item which lets you auto translate content items and dictionary items.</description>
+    <releaseNotes>
+      - auto translate dictionary items
+      - auto translate content items
+    </releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>Umbraco Auto Translate Translation Microsoft Azure</tags>
+  </metadata>
+  <files>
+    <file src="App_Plugins\AutoTranslate\**\*.*" target="content\App_Plugins\AutoTranslate" />
+	  <file src="readme.txt" target="" />
+  </files>
+</package>
