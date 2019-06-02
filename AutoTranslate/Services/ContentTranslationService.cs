@@ -1,4 +1,5 @@
-﻿using AutoTranslate.Helpers;
+﻿using System.Linq;
+using AutoTranslate.Helpers;
 using AutoTranslate.Models;
 using Newtonsoft.Json.Linq;
 using Umbraco.Core.Models;
@@ -32,9 +33,15 @@ namespace AutoTranslate.Services
         public void TranslateContentItem(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, IContent content, ILanguage defaultLanguage)
         {
             TranslateName(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content);
+
+            var allowedPropertyEditors = apiInstruction.AllowedPropertyEditors.Split(',');
+
             foreach (var property in content.Properties)
             {
-                TranslateProperty(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content, property);
+                if (allowedPropertyEditors.Contains(property.PropertyType.PropertyEditorAlias))
+                {
+                    TranslateProperty(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content, property);
+                }
             }
             _contentService.Save(content);
         }

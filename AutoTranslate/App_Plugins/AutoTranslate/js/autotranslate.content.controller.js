@@ -1,14 +1,29 @@
 (function () {
     'use strict';
 
-    function AutoTranslateContent($scope, $http, $routeParams, $window, navigationService) {
+    function AutoTranslateContent($scope, $http, $routeParams, $window, navigationService, contentResource, contentEditingHelper) {
         var apiUrl;
         var vm = this;
         vm.includeDescendants = false;
         vm.overwriteExisting = false;
+        vm.properties = [];
+        vm.chosenEditors = [];
 
         function init() {
             apiUrl = Umbraco.Sys.ServerVariables["AutoTranslate"]["ApiUrl"];
+            getProperties();
+        }
+
+        function getProperties() {
+            $http({
+                method: 'GET',
+                url: apiUrl + 'GetEditorAliasesFromContentItem/?contentId=' + $scope.currentNode.id,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (response) {
+                vm.properties = response.data;
+            }); 
         }
 
         $scope.submitTranslateContent = function () {
@@ -21,7 +36,8 @@
                     CurrentCulture: culture,
                     NodeId: $scope.currentNode.id,
                     OverwriteExistingValues: vm.overwriteExisting,
-                    IncludeDescendants: vm.includeDescendants
+                    IncludeDescendants: vm.includeDescendants,
+                    AllowedPropertyEditors: vm.chosenEditors.join()
                 }),
                 headers: {
                     'Content-Type': 'application/json'
@@ -45,14 +61,20 @@
                     return;
                 }
                 vm.includeDescendants = true;
-            }
-
-            if (type === "overwrite") {
+            } else if (type === "overwrite") {
                 if (vm.overwriteExisting) {
                     vm.overwriteExisting = false;
                     return;
                 }
                 vm.overwriteExisting = true;
+            } else {
+                var index = vm.chosenEditors.indexOf(type);
+                if (index > -1) {
+                    vm.chosenEditors.splice(index, 1);
+                } else {
+                    vm.chosenEditors.push(type);
+                }
+                console.log(vm.chosenEditors);
             }
         }
 

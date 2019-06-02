@@ -1,7 +1,9 @@
-﻿using AutoTranslate.Models;
+﻿using System.Collections.Generic;
+using AutoTranslate.Models;
 using AutoTranslate.Services;
 using System.Configuration;
 using System.Linq;
+using System.Web.Http;
 using Umbraco.Core.Services;
 using Umbraco.Web.Editors;
 using Umbraco.Web.Mvc;
@@ -87,6 +89,13 @@ namespace AutoTranslate.Controllers
             }
             
             return true;
+        }
+
+        [HttpGet]
+        public List<string> GetEditorAliasesFromContentItem(int contentId)
+        {
+            var contentItem = _contentService.GetById(contentId);
+            return contentItem?.Properties.Select(x => x.PropertyType.PropertyEditorAlias).Distinct().ToList();
         }
     }
 }

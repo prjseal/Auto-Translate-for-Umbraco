@@ -7,5 +7,6 @@
         public bool OverwriteExistingValues { get; set; }
         public bool IncludeDescendants { get; set; }
         public bool FallbackToKey { get; set; }
+        public string AllowedPropertyEditors { get; set; }
     }
 }

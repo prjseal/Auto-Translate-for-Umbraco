@@ -17,6 +17,16 @@
                         <umb-toggle checked="vm.overwriteExisting" on-click="toggle('overwrite')"></umb-toggle>
                     </umb-control-group>
                 </umb-pane>
+                
+                <p class="abstract" ng-hide="success">
+                    Choose which editors can be auto translated
+                </p>
+
+                <umb-pane ng-repeat="prop in vm.properties">
+                    <umb-control-group localize="label" label="{{prop}}">
+                        <umb-toggle checked="vm.chosenEditors.includes(prop)" on-click="toggle(prop)"></umb-toggle>
+                    </umb-control-group>
+                </umb-pane>
             </div>
 
             <umb-load-indicator ng-if="vm.loading">
