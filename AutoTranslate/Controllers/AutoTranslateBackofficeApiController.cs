@@ -33,8 +33,8 @@ namespace AutoTranslate.Controllers
             _contentService = contentService;
         }
 
-        [System.Web.Http.HttpPost]
-        public bool SubmitTranslateContent(ApiInstruction apiInstruction)
+        [HttpPost]
+        public bool SubmitTranslateContent(ContentApiInstruction apiInstruction)
         {
             var content = _contentService.GetById(apiInstruction.NodeId);
             var allLanguages = _localizationService.GetAllLanguages();
@@ -65,8 +65,8 @@ namespace AutoTranslate.Controllers
             return true;
         }
 
-        [System.Web.Http.HttpPost]
-        public bool SubmitTranslateDictionary(ApiInstruction apiInstruction)
+        [HttpPost]
+        public bool SubmitTranslateDictionary(DictionaryApiInstruction apiInstruction)
         {
             var dictionaryItem = _localizationService.GetDictionaryItemById(apiInstruction.NodeId);
             var allLanguages = _localizationService.GetAllLanguages();

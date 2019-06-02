@@ -19,7 +19,7 @@ namespace AutoTranslate.Services
             _localizationService = localizationService;
         }
 
-        public void TranslateDictionaryItem(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, IDictionaryItem dictionaryItem, ILanguage defaultLanguage, IEnumerable<ILanguage> allLanguages)
+        public void TranslateDictionaryItem(DictionaryApiInstruction apiInstruction, string subscriptionKey, string uriBase, IDictionaryItem dictionaryItem, ILanguage defaultLanguage, IEnumerable<ILanguage> allLanguages)
         {
             if (dictionaryItem != null)
             {
@@ -45,7 +45,7 @@ namespace AutoTranslate.Services
             }
         }
 
-        public void UpdateDictionaryTranslations(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, IDictionaryItem dictionaryItem, ILanguage defaultLanguage, IEnumerable<ILanguage> allLanguages, string valueToTranslate)
+        public void UpdateDictionaryTranslations(DictionaryApiInstruction apiInstruction, string subscriptionKey, string uriBase, IDictionaryItem dictionaryItem, ILanguage defaultLanguage, IEnumerable<ILanguage> allLanguages, string valueToTranslate)
         {
             var allLanguagesList = allLanguages.ToList();
             foreach (var translation in dictionaryItem.Translations)

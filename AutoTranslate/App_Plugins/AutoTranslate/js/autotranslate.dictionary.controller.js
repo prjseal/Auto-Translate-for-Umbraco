@@ -41,27 +41,11 @@
 
         function toggleHandler(type) {
             if (type === "recursive") {
-                if (vm.includeDescendants) {
-                    vm.includeDescendants = false;
-                    return;
-                }
-                vm.includeDescendants = true;
-            }
-
-            if (type === "overwrite") {
-                if (vm.overwriteExisting) {
-                    vm.overwriteExisting = false;
-                    return;
-                }
-                vm.overwriteExisting = true;
-            }
-
-            if (type === "fallbackToKey") {
-                if (vm.fallbackToKey) {
-                    vm.fallbackToKey = false;
-                    return;
-                }
-                vm.fallbackToKey = true;
+                vm.includeDescendants = !vm.includeDescendants;
+            } else if (type === "overwrite") {
+                vm.overwriteExisting = !vm.overwriteExisting;
+            } else if (type === "fallbackToKey") {
+                vm.fallbackToKey = !vm.fallbackToKey;
             }
         }
 

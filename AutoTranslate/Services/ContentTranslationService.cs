@@ -18,10 +18,9 @@ namespace AutoTranslate.Services
             _contentService = contentService;
         }
 
-        public long TranslatePageOfContentItems(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, int pageIndex, int pageSize)
+        public long TranslatePageOfContentItems(ContentApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, int pageIndex, int pageSize)
         {
-            long totalRecords;
-            var descendants = _contentService.GetPagedDescendants(apiInstruction.NodeId, pageIndex, pageSize, out totalRecords);
+            var descendants = _contentService.GetPagedDescendants(apiInstruction.NodeId, pageIndex, pageSize, out var totalRecords);
             foreach (var contentItem in descendants)
             {
                 TranslateContentItem(apiInstruction, subscriptionKey, uriBase, contentItem, defaultLanguage);
@@ -30,7 +29,7 @@ namespace AutoTranslate.Services
             return totalRecords;
         }
 
-        public void TranslateContentItem(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, IContent content, ILanguage defaultLanguage)
+        public void TranslateContentItem(ContentApiInstruction apiInstruction, string subscriptionKey, string uriBase, IContent content, ILanguage defaultLanguage)
         {
             TranslateName(apiInstruction, subscriptionKey, uriBase, defaultLanguage, content);
 
@@ -46,7 +45,7 @@ namespace AutoTranslate.Services
             _contentService.Save(content);
         }
 
-        public void TranslateName(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content)
+        public void TranslateName(ContentApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content)
         {
             var currentCultureNameValue = content.GetCultureName(apiInstruction.CurrentCulture);
             var defaultCultureNameValue = content.GetCultureName(defaultLanguage.IsoCode);
@@ -59,7 +58,7 @@ namespace AutoTranslate.Services
             }
         }
 
-        public void TranslateProperty(ApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content, Property property)
+        public void TranslateProperty(ContentApiInstruction apiInstruction, string subscriptionKey, string uriBase, ILanguage defaultLanguage, IContent content, Property property)
         {
             var currentValue = content.GetValue<string>(property.Alias, apiInstruction.CurrentCulture);
             var propertyValue = content.GetValue<string>(property.Alias, defaultLanguage.IsoCode);

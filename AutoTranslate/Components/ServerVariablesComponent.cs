@@ -42,7 +42,7 @@ namespace AutoTranslate.Components
                     {
                         "ApiUrl",
                         urlHelper.GetUmbracoApiServiceBaseUrl<AutoTranslateBackofficeApiController>(
-                            controller => controller.SubmitTranslateContent(new ApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
+                            controller => controller.SubmitTranslateContent(new ContentApiInstruction { CurrentCulture = string.Empty, NodeId = 0 }))
                     }
                 });
         }

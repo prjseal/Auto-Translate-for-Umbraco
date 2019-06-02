@@ -54,19 +54,10 @@
         $scope.toggle = toggleHandler;
 
         function toggleHandler(type) {
-            // If the recurvise toggle is clicked
             if (type === "recursive") {
-                if (vm.includeDescendants) {
-                    vm.includeDescendants = false;
-                    return;
-                }
-                vm.includeDescendants = true;
+                vm.includeDescendants = !vm.includeDescendants;
             } else if (type === "overwrite") {
-                if (vm.overwriteExisting) {
-                    vm.overwriteExisting = false;
-                    return;
-                }
-                vm.overwriteExisting = true;
+                vm.overwriteExisting = !vm.overwriteExisting;
             } else {
                 var index = vm.chosenEditors.indexOf(type);
                 if (index > -1) {

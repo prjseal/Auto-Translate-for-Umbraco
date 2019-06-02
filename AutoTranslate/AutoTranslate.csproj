@@ -237,7 +237,8 @@
     <Compile Include="Composers\TreeMenuRenderingComposer.cs" />
     <Compile Include="Controllers\AutoTranslateBackofficeApiController.cs" />
     <Compile Include="Helpers\CommonHelpers.cs" />
-    <Compile Include="Models\ApiInstruction.cs" />
+    <Compile Include="Models\DictionaryApiInstruction.cs" />
+    <Compile Include="Models\ContentApiInstruction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ContentTranslationService.cs" />
     <Compile Include="Services\DictionaryTranslationService.cs" />
