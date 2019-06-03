@@ -16,6 +16,10 @@ and put it in your app settings with the api url like this:
 <add key="AzureTranslateApiUrl" value="https://api.cognitive.microsofttranslator.com/translate?api-version=3.0"/>
 <add key="AzureTranslateSubscriptionKey" value="your-subscription-key-here"/>
 
+DISCLAIMER: This package is only as good as the translations you get from the
+Azure Text Translation Service. The translations should be checked before you
+publish them to the world.
+
 ------------------------------------------------------------------------------
 
 This package is made by Paul Seal from codeshare.co.uk
