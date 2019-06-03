@@ -2,7 +2,7 @@
     <div class="umb-dialog-body form-horizontal" ng-cloak>
         <div class="umb-pane">
 
-            <div ng-show="!vm.loading">
+            <div ng-show="!vm.loading && !vm.error">
                 <p class="abstract" ng-hide="success">
                     Auto translate this dictionary item and its descendants, if the option is checked.
                 </p>
@@ -22,6 +22,12 @@
                         <umb-toggle checked="vm.overwriteExisting" on-click="toggle('overwrite')"></umb-toggle>
                     </umb-control-group>
                 </umb-pane>
+            </div>
+
+            <div ng-if="vm.error">
+                <p style="color: red;">
+                    {{vm.error}}
+                </p>
             </div>
 
             <umb-load-indicator ng-if="vm.loading">

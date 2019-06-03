@@ -2,7 +2,7 @@
     <div class="umb-dialog-body form-horizontal" ng-cloak>
         <div class="umb-pane">
 
-            <div ng-show="!vm.loading">
+            <div ng-show="!vm.loading && !vm.error">
                 <p class="abstract" ng-hide="success">
                     Auto translate the content for the language selected, using the from the default language.
                 </p>
@@ -27,6 +27,12 @@
                         <umb-toggle checked="vm.chosenEditors.includes(prop)" on-click="toggle(prop)"></umb-toggle>
                     </umb-control-group>
                 </umb-pane>
+            </div>
+            
+            <div ng-if="vm.error">
+                <p style="color: red;">
+                    {{vm.error}}
+                </p>
             </div>
 
             <umb-load-indicator ng-if="vm.loading">

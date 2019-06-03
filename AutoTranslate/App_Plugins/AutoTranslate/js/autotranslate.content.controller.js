@@ -8,6 +8,7 @@
         vm.overwriteExisting = false;
         vm.properties = [];
         vm.chosenEditors = [];
+        vm.error = '';
 
         function init() {
             apiUrl = Umbraco.Sys.ServerVariables["AutoTranslate"]["ApiUrl"];
@@ -44,6 +45,9 @@
                 }
             }).then(function (response) {
                 $window.location.reload(true);
+            }).catch((err) => {
+                vm.loading = false;
+                vm.error = "Unable to translate text. Please check your Azure API details are correct in the web.config file.";
             });
         };
 
